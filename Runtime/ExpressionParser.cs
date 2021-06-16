@@ -13,12 +13,13 @@ namespace CodeWriter.ExpressionParser
         private readonly Dictionary<string, ExprBuilder> _builderCached = new Dictionary<string, ExprBuilder>();
         private Parser<ExprBuilder> _parserCached;
 
-        public Expression<T> CompileCached(string input, ExpresionContext<T> context)
+        public Expression<bool> CompilePredicate(string input, ExpresionContext<T> context, bool cache)
         {
-            return Compile(input, context, true);
+            var expr = Compile(input, context, cache);
+            return () => IsTrue(expr.Invoke());
         }
 
-        public Expression<T> Compile(string input, ExpresionContext<T> context, bool cache = false)
+        public Expression<T> Compile(string input, ExpresionContext<T> context, bool cache)
         {
             context = context ?? new ExpresionContext<T>();
 
@@ -80,8 +81,8 @@ namespace CodeWriter.ExpressionParser
 
             var variable =
             (
-                from variableName in Letter.Many().Text()
-                select MakeVariable(variableName)
+                from name in Letter.AtLeastOnce().Text()
+                select MakeVariable(name)
             ).Named("variable");
 
             Parser<ExprBuilder> expression = null;
@@ -209,35 +210,47 @@ namespace CodeWriter.ExpressionParser
                 return context =>
                 {
                     var inner = parameterBuilders[0].Invoke(context);
-                    return () => func(inner());
+                    return () => func(inner.Invoke());
                 };
             }
         }
 
-        private static ExprBuilder MakeUnary(UnaryFunc func, ExprBuilder innerBuilder) => context =>
+        private static ExprBuilder MakeUnary(UnaryFunc func, ExprBuilder innerBuilder)
         {
-            var inner = innerBuilder.Invoke(context);
-            return () => func(inner.Invoke());
-        };
+            return context =>
+            {
+                var inner = innerBuilder.Invoke(context);
+                return () => func(inner.Invoke());
+            };
+        }
 
-        private static ExprBuilder MakeBinary(BinaryFunc func, ExprBuilder l, ExprBuilder r) => context =>
+        private static ExprBuilder MakeBinary(BinaryFunc func, ExprBuilder l, ExprBuilder r)
         {
-            var left = l.Invoke(context);
-            var right = r.Invoke(context);
-            return () => func(left.Invoke(), right.Invoke());
-        };
+            return context =>
+            {
+                var left = l.Invoke(context);
+                var right = r.Invoke(context);
+                return () => func(left.Invoke(), right.Invoke());
+            };
+        }
 
-        private static ExprBuilder MakeVariable(string name) => context =>
+        private static ExprBuilder MakeVariable(string name)
         {
-            var variable = context.GetVariable(name, createIfUndefined: false);
-            return () => variable.Value;
-        };
+            return context =>
+            {
+                var variable = context.GetVariable(name, VariableNotDefinedAction.Throw);
+                return () => variable.Value;
+            };
+        }
 
-        private static ExprBuilder MakeConstant(string valueString, Func<string, T> parser) => context =>
+        private static ExprBuilder MakeConstant(string valueString, Func<string, T> parser)
         {
-            var value = parser(valueString);
-            return () => value;
-        };
+            return context =>
+            {
+                var value = parser(valueString);
+                return () => value;
+            };
+        }
     }
 
     public class ExpresionContext<T>
@@ -245,27 +258,40 @@ namespace CodeWriter.ExpressionParser
         private readonly Dictionary<string, ExpressionVariable<T>> _variables =
             new Dictionary<string, ExpressionVariable<T>>();
 
-        public ExpressionVariable<T> GetVariable(string name, bool createIfUndefined = true)
+        public ExpressionVariable<T> GetVariable(string name,
+            VariableNotDefinedAction variableNotDefinedAction = VariableNotDefinedAction.Create)
         {
             if (_variables.TryGetValue(name, out var variable))
             {
                 return variable;
             }
 
-            if (!createIfUndefined)
+            switch (variableNotDefinedAction)
             {
-                throw new VariableNotDefinedException(name);
-            }
+                case VariableNotDefinedAction.Throw:
+                    throw new VariableNotDefinedException(name);
 
-            variable = new ExpressionVariable<T>();
-            _variables.Add(name, variable);
-            return variable;
+                case VariableNotDefinedAction.Create:
+                    variable = new ExpressionVariable<T>();
+                    _variables.Add(name, variable);
+                    return variable;
+
+                default:
+                    return null;
+            }
         }
     }
 
     public class ExpressionVariable<T>
     {
         public T Value { get; set; }
+    }
+
+    public enum VariableNotDefinedAction
+    {
+        Throw,
+        Null,
+        Create,
     }
 
     public class VariableNotDefinedException : Exception

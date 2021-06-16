@@ -74,7 +74,7 @@ namespace CodeWriter.ExpressionParser.Tests
         [TestCase("1 AND 0 OR 1", ExpectedResult = 1)]
         [TestCase("1 AND 0 OR 0", ExpectedResult = 0)]
         [TestCase("1 AND (0 OR 1)", ExpectedResult = 1)]
-        public float Parse(string input) => Execute(input);
+        public float Parse(string input) => Execute(input, null);
 
         [Test]
         [TestCase("a", 1, 2, ExpectedResult = 1)]
@@ -103,9 +103,9 @@ namespace CodeWriter.ExpressionParser.Tests
         [Test]
         public void Parse_Compare_Invalid()
         {
-            Assert.Throws<ParseException>(() => Compile("0 > 0 > 0"));
-            Assert.Throws<ParseException>(() => Compile("0 <= 0 > 0"));
-            Assert.Throws<ParseException>(() => Compile("0 = 0 != 0"));
+            Assert.Throws<ParseException>(() => Compile("0 > 0 > 0", null));
+            Assert.Throws<ParseException>(() => Compile("0 <= 0 > 0", null));
+            Assert.Throws<ParseException>(() => Compile("0 = 0 != 0", null));
         }
 
         [Test]
@@ -129,14 +129,23 @@ namespace CodeWriter.ExpressionParser.Tests
             Assert.Throws<FunctionNotDefinedException>(() => Compile("IF(1, 1, 1, 1)", context));
         }
 
-        private static float Execute(string input, ExpresionContext<float> context = null)
+        [Test]
+        [TestCase("0", ExpectedResult = false)]
+        [TestCase("1", ExpectedResult = true)]
+        [TestCase("5", ExpectedResult = true)]
+        public bool Parse_Predicate(string input)
+        {
+            return FloatExpressionParser.Instance.CompilePredicate(input, null, false).Invoke();
+        }
+
+        private static float Execute(string input, ExpresionContext<float> context)
         {
             return Compile(input, context).Invoke();
         }
 
-        private static Expression<float> Compile(string input, ExpresionContext<float> context = null)
+        private static Expression<float> Compile(string input, ExpresionContext<float> context)
         {
-            return FloatExpressionParser.Instance.Compile(input, context);
+            return FloatExpressionParser.Instance.Compile(input, context, false);
         }
     }
 }
