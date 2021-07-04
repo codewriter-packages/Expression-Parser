@@ -42,7 +42,10 @@ namespace CodeWriter.ExpressionParser
             return builder.Invoke(context);
         }
 
-        private static Parser<BinaryFunc> Operator(string op, BinaryFunc fun) => String(op).Token().Return(fun);
+        private static Parser<BinaryFunc> Operator(string op, BinaryFunc fun)
+        {
+            return String(op).Token().Return(fun).Named(op);
+        }
 
         private static Parser<ExprBuilder> BinaryOperator(Parser<BinaryFunc> op,
             Parser<ExprBuilder> operand, Func<BinaryFunc, ExprBuilder, ExprBuilder, ExprBuilder> apply) =>
@@ -81,7 +84,7 @@ namespace CodeWriter.ExpressionParser
 
             var variable =
             (
-                from name in Letter.AtLeastOnce().Text()
+                from name in Letter.Or(Char('_')).AtLeastOnce().Text()
                 select MakeVariable(name)
             ).Named("variable");
 
@@ -132,6 +135,9 @@ namespace CodeWriter.ExpressionParser
             return expression.End();
         }
 
+        protected abstract T False { get; }
+        protected abstract T True { get; }
+
         protected abstract T Parse(string input);
         protected abstract T Negate(T v);
         protected abstract T Add(T a, T b);
@@ -140,9 +146,6 @@ namespace CodeWriter.ExpressionParser
         protected abstract T Div(T a, T b);
         protected abstract T Mod(T a, T b);
         protected abstract T Pow(T a, T b);
-        protected abstract T Not(T v);
-        protected abstract T And(T a, T b);
-        protected abstract T Or(T a, T b);
         protected abstract T Equal(T a, T b);
         protected abstract T NotEqual(T a, T b);
         protected abstract T LessThan(T a, T b);
@@ -150,6 +153,10 @@ namespace CodeWriter.ExpressionParser
         protected abstract T GreaterThan(T a, T b);
         protected abstract T GreaterThanOrEqual(T a, T b);
         protected abstract bool IsTrue(T v);
+
+        private T Not(T v) => IsTrue(v) ? False : True;
+        private T And(T a, T b) => IsTrue(a) ? b : a;
+        private T Or(T a, T b) => IsTrue(a) ? a : b;
 
         private delegate Expression<T> ExprBuilder(ExpresionContext<T> context);
 
@@ -234,64 +241,81 @@ namespace CodeWriter.ExpressionParser
             };
         }
 
-        private static ExprBuilder MakeVariable(string name)
+        private ExprBuilder MakeVariable(string name)
         {
+            if (name.Equals("TRUE", StringComparison.Ordinal))
+            {
+                return context => () => True;
+            }
+
+            if (name.Equals("FALSE", StringComparison.Ordinal))
+            {
+                return context => () => False;
+            }
+
             return context =>
             {
-                var variable = context.GetVariable(name, VariableNotDefinedAction.Throw);
+                var variable = context.GetVariable(name);
                 return () => variable.Value;
             };
         }
 
         private static ExprBuilder MakeConstant(string valueString, Func<string, T> parser)
         {
-            return context =>
-            {
-                var value = parser(valueString);
-                return () => value;
-            };
+            var value = parser(valueString);
+            return context => () => value;
         }
     }
 
     public class ExpresionContext<T>
     {
+        private readonly ExpresionContext<T> _parent;
+
         private readonly Dictionary<string, ExpressionVariable<T>> _variables =
             new Dictionary<string, ExpressionVariable<T>>();
 
-        public ExpressionVariable<T> GetVariable(string name,
-            VariableNotDefinedAction variableNotDefinedAction = VariableNotDefinedAction.Create)
+        public ExpresionContext(string[] variables = null)
+        {
+            if (variables != null)
+            {
+                foreach (var variable in variables)
+                {
+                    _variables.Add(variable, new ExpressionVariable<T>());
+                }
+            }
+        }
+
+        public ExpresionContext(ExpresionContext<T> parent, string[] variables = null)
+            : this(variables)
+        {
+            _parent = parent;
+        }
+
+        public ExpressionVariable<T> GetVariable(string name, bool nullIsOk = false)
         {
             if (_variables.TryGetValue(name, out var variable))
             {
                 return variable;
             }
 
-            switch (variableNotDefinedAction)
+            var parentVariable = _parent?.GetVariable(name, nullIsOk: true);
+            if (parentVariable != null)
             {
-                case VariableNotDefinedAction.Throw:
-                    throw new VariableNotDefinedException(name);
-
-                case VariableNotDefinedAction.Create:
-                    variable = new ExpressionVariable<T>();
-                    _variables.Add(name, variable);
-                    return variable;
-
-                default:
-                    return null;
+                return parentVariable;
             }
+
+            if (nullIsOk)
+            {
+                return null;
+            }
+
+            throw new VariableNotDefinedException(name);
         }
     }
 
     public class ExpressionVariable<T>
     {
         public T Value { get; set; }
-    }
-
-    public enum VariableNotDefinedAction
-    {
-        Throw,
-        Null,
-        Create,
     }
 
     public class VariableNotDefinedException : Exception

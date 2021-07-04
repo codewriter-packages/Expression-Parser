@@ -7,6 +7,9 @@ namespace CodeWriter.ExpressionParser
     {
         public static readonly ExpressionParser<float> Instance = new FloatExpressionParser();
 
+        protected override float False { get; } = 0f;
+        protected override float True { get; } = 1f;
+
         protected override float Parse(string input) =>
             float.Parse(input, NumberStyles.Any, CultureInfo.InvariantCulture);
 
@@ -17,9 +20,6 @@ namespace CodeWriter.ExpressionParser
         protected override float Div(float a, float b) => a / b;
         protected override float Mod(float a, float b) => a % b;
         protected override float Pow(float a, float b) => Mathf.Pow(a, b);
-        protected override float Not(float v) => Mathf.Approximately(v, 0) ? 1 : 0;
-        protected override float And(float a, float b) => !Mathf.Approximately(a, 0) ? b : 0;
-        protected override float Or(float a, float b) => Mathf.Approximately(a, 0) ? b : a;
         protected override float Equal(float a, float b) => Mathf.Approximately(a, b) ? 1 : 0;
         protected override float NotEqual(float a, float b) => !Mathf.Approximately(a, b) ? 1 : 0;
         protected override float LessThan(float a, float b) => a < b ? 1 : 0;
