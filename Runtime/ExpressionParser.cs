@@ -256,7 +256,7 @@ namespace CodeWriter.ExpressionParser
             return context =>
             {
                 var variable = context.GetVariable(name);
-                return () => variable.Value;
+                return variable;
             };
         }
 
@@ -271,27 +271,24 @@ namespace CodeWriter.ExpressionParser
     {
         private readonly ExpresionContext<T> _parent;
 
-        private readonly Dictionary<string, ExpressionVariable<T>> _variables =
-            new Dictionary<string, ExpressionVariable<T>>();
+        private readonly Dictionary<string, Expression<T>> _variables = new Dictionary<string, Expression<T>>();
 
-        public ExpresionContext(string[] variables = null)
-        {
-            if (variables != null)
-            {
-                foreach (var variable in variables)
-                {
-                    _variables.Add(variable, new ExpressionVariable<T>());
-                }
-            }
-        }
-
-        public ExpresionContext(ExpresionContext<T> parent, string[] variables = null)
-            : this(variables)
+        public ExpresionContext(ExpresionContext<T> parent = null)
         {
             _parent = parent;
         }
 
-        public ExpressionVariable<T> GetVariable(string name, bool nullIsOk = false)
+        public void RegisterVariable(string name, Expression<T> value)
+        {
+            if (_variables.ContainsKey(name))
+            {
+                throw new InvalidOperationException($"Variable {name} already registered");
+            }
+
+            _variables.Add(name, value);
+        }
+
+        public Expression<T> GetVariable(string name, bool nullIsOk = false)
         {
             if (_variables.TryGetValue(name, out var variable))
             {
@@ -311,11 +308,6 @@ namespace CodeWriter.ExpressionParser
 
             throw new VariableNotDefinedException(name);
         }
-    }
-
-    public class ExpressionVariable<T>
-    {
-        public T Value { get; set; }
     }
 
     public class VariableNotDefinedException : Exception

@@ -95,28 +95,28 @@ namespace CodeWriter.ExpressionParser.Tests
         [TestCase("NOT(a) AND NOT(b)", 1, 0, ExpectedResult = 0)]
         public float Parse_Variable(string input, float a, float b)
         {
-            var context = new ExpresionContext<float>(new[] {"a", "b"});
-            context.GetVariable("a").Value = a;
-            context.GetVariable("b").Value = b;
+            var context = new ExpresionContext<float>();
+            context.RegisterVariable("a", () => a);
+            context.RegisterVariable("b", () => b);
             return Execute(input, context);
         }
 
         [Test]
         public void ComplexVariableName()
         {
-            var context = new ExpresionContext<float>(new[] {"Some_Variable"});
-            context.GetVariable("Some_Variable").Value = 1;
+            var context = new ExpresionContext<float>();
+            context.RegisterVariable("Some_Variable", () => 1);
             Assert.AreEqual(1, Execute("Some_Variable", context));
         }
 
         [Test]
         public void ReadmeSample()
         {
-            var context = new ExpresionContext<float>(new[] {"a", "b", "c"});
+            var context = new ExpresionContext<float>();
 
-            context.GetVariable("a").Value = 1;
-            context.GetVariable("b").Value = 2;
-            context.GetVariable("c").Value = 3;
+            context.RegisterVariable("a", () => 1);
+            context.RegisterVariable("b", () => 2);
+            context.RegisterVariable("c", () => 3);
 
             var input = "a >= b AND NOT(b) OR (a + b) >= c";
             var compiledExpr = FloatExpressionParser.Instance.Compile(input, context, true);
@@ -128,8 +128,8 @@ namespace CodeWriter.ExpressionParser.Tests
         [Test]
         public void Parse_Variable_Invalid()
         {
-            var context = new ExpresionContext<float>(new[] {"a"});
-            context.GetVariable("a").Value = 1;
+            var context = new ExpresionContext<float>();
+            context.RegisterVariable("a", () => 1);
             Assert.AreEqual(1, Execute("a", context));
             Assert.Throws<VariableNotDefinedException>(() => Compile("b", context));
         }
@@ -145,20 +145,22 @@ namespace CodeWriter.ExpressionParser.Tests
         [Test]
         public void Parse_If()
         {
-            var context = new ExpresionContext<float>(new[] {"n"});
-            context.GetVariable("n").Value = 0;
+            var context = new ExpresionContext<float>();
+
+            var n = 0;
+            context.RegisterVariable("n", () => n);
 
             var expr = Compile("IF(n < 1, 1, n < 5, 5, n < 10, 10, 20)", context);
 
             Assert.AreEqual(1, expr.Invoke());
 
-            context.GetVariable("n").Value = 4;
+            n = 4;
             Assert.AreEqual(5, expr.Invoke());
 
-            context.GetVariable("n").Value = 9;
+            n = 9;
             Assert.AreEqual(10, expr.Invoke());
 
-            context.GetVariable("n").Value = 15;
+            n = 15;
             Assert.AreEqual(20, expr.Invoke());
 
             Assert.Throws<FunctionNotDefinedException>(() => Compile("IF(1)", context));
@@ -169,25 +171,28 @@ namespace CodeWriter.ExpressionParser.Tests
         [Test]
         public void ContextTree()
         {
-            var rootContext = new ExpresionContext<float>(new[] {"a", "b"});
-            var subContext = new ExpresionContext<float>(rootContext, new[] {"b"});
+            var rootContext = new ExpresionContext<float>();
+            var subContext = new ExpresionContext<float>(rootContext);
 
-            subContext.GetVariable("b").Value = 3;
+            var rootA = 1;
+            var rootB = 2;
+            var subB = 3;
 
-            rootContext.GetVariable("a").Value = 1;
-            rootContext.GetVariable("b").Value = 2;
+            rootContext.RegisterVariable("a", () => rootA);
+            rootContext.RegisterVariable("b", () => rootB);
+            subContext.RegisterVariable("b", () => subB);
 
             var expr = Compile("a + b", subContext);
 
             Assert.AreEqual(4, expr.Invoke()); // 1 + 3
 
-            rootContext.GetVariable("a").Value = 10;
+            rootA = 10;
             Assert.AreEqual(13, expr.Invoke()); // 10 + 3
 
-            subContext.GetVariable("b").Value = 20;
+            subB = 20;
             Assert.AreEqual(30, expr.Invoke()); // 10 + 20
 
-            rootContext.GetVariable("b").Value = 100;
+            rootB = 100;
             Assert.AreEqual(30, expr.Invoke()); // 10 + 20
         }
 

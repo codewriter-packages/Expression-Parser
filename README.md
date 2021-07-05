@@ -5,12 +5,12 @@ _Simple expression parser library for unity_
 
 ```csharp
 // create context
-var context = new ExpresionContext<float>(new[] {"a", "b", "c"});
+var context = new ExpresionContext<float>();
 
 // register some variables
-context.GetVariable("a").Value = 1;
-context.GetVariable("b").Value = 2;
-context.GetVariable("c").Value = 3;
+context.RegisterVariable("a", () => 1);
+context.RegisterVariable("b", () => 2);
+context.RegisterVariable("c", () => 3);
 
 var input = "a >= b AND NOT(b) OR (a + b) >= c";
 
