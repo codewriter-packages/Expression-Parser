@@ -42,6 +42,16 @@ namespace CodeWriter.ExpressionParser.Tests
         [TestCase("NOT(-5)", ExpectedResult = 0)]
         [TestCase("NOT(5)", ExpectedResult = 0)]
         [TestCase("NOT(NOT(0))", ExpectedResult = 0)]
+        // MIN
+        [TestCase("MIN(0, 0)", ExpectedResult = 0)]
+        [TestCase("MIN(0, 1)", ExpectedResult = 0)]
+        [TestCase("MIN(-5, 5)", ExpectedResult = -5)]
+        [TestCase("MIN(5, 4, 7, 3, 4)", ExpectedResult = 3)]
+        // MAX
+        [TestCase("MAX(0, 0)", ExpectedResult = 0)]
+        [TestCase("MAX(0, 1)", ExpectedResult = 1)]
+        [TestCase("MAX(-5, 5)", ExpectedResult = 5)]
+        [TestCase("MAX(5, 4, 7, 3, 4)", ExpectedResult = 7)]
         // AND
         [TestCase("0 AND 0", ExpectedResult = 0)]
         [TestCase("0 AND 1", ExpectedResult = 0)]
@@ -140,6 +150,13 @@ namespace CodeWriter.ExpressionParser.Tests
             Assert.Throws<ParseException>(() => Compile("0 > 0 > 0", null));
             Assert.Throws<ParseException>(() => Compile("0 <= 0 > 0", null));
             Assert.Throws<ParseException>(() => Compile("0 = 0 != 0", null));
+        }
+
+        [Test]
+        public void Parse_MinMax_Invalid()
+        {
+            Assert.Throws<ParseException>(() => Compile("MIN()", null));
+            Assert.Throws<ParseException>(() => Compile("MAX()", null));
         }
 
         [Test]

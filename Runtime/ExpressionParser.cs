@@ -157,6 +157,8 @@ namespace CodeWriter.ExpressionParser
         private T Not(T v) => IsTrue(v) ? False : True;
         private T And(T a, T b) => IsTrue(a) ? b : a;
         private T Or(T a, T b) => IsTrue(a) ? a : b;
+        private T Min(T a, T b) => IsTrue(GreaterThan(a, b)) ? b : a;
+        private T Max(T a, T b) => IsTrue(GreaterThan(b, a)) ? b : a;
 
         private delegate Expression<T> ExprBuilder(ExpresionContext<T> context);
 
@@ -170,6 +172,12 @@ namespace CodeWriter.ExpressionParser
             {
                 case "NOT":
                     return MakeFunction1(Not);
+
+                case "MIN":
+                    return MakeFunctionFold(Min);
+
+                case "MAX":
+                    return MakeFunctionFold(Max);
 
                 case "IF":
                     if (parameterBuilders.Count < 3 ||
@@ -218,6 +226,35 @@ namespace CodeWriter.ExpressionParser
                 {
                     var inner = parameterBuilders[0].Invoke(context);
                     return () => func(inner.Invoke());
+                };
+            }
+
+            ExprBuilder MakeFunctionFold(Func<T, T, T> func)
+            {
+                if (parameterBuilders.Count < 1)
+                {
+                    throw new FunctionNotDefinedException(name, "Wrong parameters count");
+                }
+
+                return context =>
+                {
+                    var inner = new List<Expression<T>>();
+
+                    for (var i = 0; i < parameterBuilders.Count; i++)
+                    {
+                        inner.Add(parameterBuilders[i].Invoke(context));
+                    }
+
+                    return () =>
+                    {
+                        var result = inner[0].Invoke();
+                        for (var i = 1; i < inner.Count; i++)
+                        {
+                            result = func(result, inner[i].Invoke());
+                        }
+
+                        return result;
+                    };
                 };
             }
         }
