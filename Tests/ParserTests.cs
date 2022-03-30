@@ -136,11 +136,22 @@ namespace CodeWriter.ExpressionParser.Tests
         }
 
         [Test]
-        public void Parse_Variable_Invalid()
+        public void Parse_Variable_Names()
         {
             var context = new ExpresionContext<float>();
-            context.RegisterVariable("a", () => 1);
-            Assert.AreEqual(1, Execute("a", context));
+            context.RegisterVariable("o", () => 1);
+            context.RegisterVariable("one", () => 1);
+            context.RegisterVariable("one123", () => 1);
+            context.RegisterVariable("_one123", () => 1);
+            context.RegisterVariable("one_123", () => 1);
+            context.RegisterVariable("one123_", () => 1);
+            Assert.AreEqual(1, Execute("o", context));
+            Assert.AreEqual(1, Execute("one", context));
+            Assert.AreEqual(1, Execute("one123", context));
+            Assert.AreEqual(1, Execute("_one123", context));
+            Assert.AreEqual(1, Execute("one_123", context));
+            Assert.AreEqual(1, Execute("one123_", context));
+            Assert.Throws<ParseException>(() => Compile("123one", context));
             Assert.Throws<VariableNotDefinedException>(() => Compile("b", context));
         }
 

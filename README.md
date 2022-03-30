@@ -63,7 +63,9 @@ Create your own `ExpressionParser` implementation to support other data types
 
 #### Variables
 
-Creation of custom variables is supported. Variable name may contains only english letters and an underscore.
+Creation of custom variables is supported.
+Variable name must starts with english letter or underscore.
+The rest of the variable name may also contains digits.
 
 #### Functions
 

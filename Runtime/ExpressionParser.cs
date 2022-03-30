@@ -62,6 +62,11 @@ namespace CodeWriter.ExpressionParser
 
         private Parser<ExprBuilder> CreateParser()
         {
+            var letterOrUnderscore = Char(c => char.IsLetter(c) || c == '_', 
+                "letter or underscore");
+            var letterOrDigitOrUnderscore = Char(c => char.IsLetterOrDigit(c) || c == '_', 
+                "letter or digit or underscore");
+            
             var constant = (
                 from number in DecimalInvariant
                 select MakeConstant(number, Parse)
@@ -84,8 +89,9 @@ namespace CodeWriter.ExpressionParser
 
             var variable =
             (
-                from name in Letter.Or(Char('_')).AtLeastOnce().Text()
-                select MakeVariable(name)
+                from nameHead in letterOrUnderscore.Once().Text()
+                from nameTail in letterOrDigitOrUnderscore.Many().Text()
+                select MakeVariable(nameHead + nameTail)
             ).Named("variable");
 
             Parser<ExprBuilder> expression = null;
