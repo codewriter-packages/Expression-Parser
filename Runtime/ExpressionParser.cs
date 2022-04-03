@@ -26,17 +26,24 @@ namespace CodeWriter.ExpressionParser
             _parserCached = _parserCached ?? CreateParser();
 
             ExprBuilder builder;
-            if (cache)
+            try
             {
-                if (!_builderCached.TryGetValue(input, out builder))
+                if (cache)
+                {
+                    if (!_builderCached.TryGetValue(input, out builder))
+                    {
+                        builder = _parserCached.Parse(input);
+                        _builderCached.Add(input, builder);
+                    }
+                }
+                else
                 {
                     builder = _parserCached.Parse(input);
-                    _builderCached.Add(input, builder);
                 }
             }
-            else
+            catch (ParseException parseException)
             {
-                builder = _parserCached.Parse(input);
+                throw new ExpressionParseException(input, parseException);
             }
 
             return builder.Invoke(context);
@@ -365,6 +372,14 @@ namespace CodeWriter.ExpressionParser
     {
         public FunctionNotDefinedException(string name, string reason) : base(
             $"Function '{name}' not defined: {reason}")
+        {
+        }
+    }
+
+    public class ExpressionParseException : Exception
+    {
+        public ExpressionParseException(string expression, ParseException parseException)
+            : base($"Failed to parse expression '{expression}'{Environment.NewLine}{parseException.Message}")
         {
         }
     }
