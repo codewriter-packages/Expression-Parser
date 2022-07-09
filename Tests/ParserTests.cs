@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Sprache;
 
 namespace CodeWriter.ExpressionParser.Tests
 {
@@ -153,23 +152,23 @@ namespace CodeWriter.ExpressionParser.Tests
             Assert.AreEqual(1, Execute("_one123", context));
             Assert.AreEqual(1, Execute("one_123", context));
             Assert.AreEqual(1, Execute("one123_", context));
-            Assert.Throws<ParseException>(() => Compile("123one", context));
+            Assert.Throws<ExpressionParseException>(() => Compile("123one", context));
             Assert.Throws<VariableNotDefinedException>(() => Compile("b", context));
         }
 
         [Test]
         public void Parse_Compare_Invalid()
         {
-            Assert.Throws<ParseException>(() => Compile("0 > 0 > 0", null));
-            Assert.Throws<ParseException>(() => Compile("0 <= 0 > 0", null));
-            Assert.Throws<ParseException>(() => Compile("0 = 0 != 0", null));
+            Assert.Throws<ExpressionParseException>(() => Compile("0 > 0 > 0", null));
+            Assert.Throws<ExpressionParseException>(() => Compile("0 <= 0 > 0", null));
+            Assert.Throws<ExpressionParseException>(() => Compile("0 = 0 != 0", null));
         }
 
         [Test]
         public void Parse_MinMax_Invalid()
         {
-            Assert.Throws<ParseException>(() => Compile("MIN()", null));
-            Assert.Throws<ParseException>(() => Compile("MAX()", null));
+            Assert.Throws<ExpressionParseException>(() => Compile("MIN()", null));
+            Assert.Throws<ExpressionParseException>(() => Compile("MAX()", null));
         }
 
         [Test]
