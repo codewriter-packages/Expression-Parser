@@ -320,12 +320,15 @@ namespace CodeWriter.ExpressionParser
     public class ExpresionContext<T>
     {
         private readonly ExpresionContext<T> _parent;
+        private readonly Func<string, Expression<T>> _unregisteredVariableResolver;
 
         private readonly Dictionary<string, Expression<T>> _variables = new Dictionary<string, Expression<T>>();
 
-        public ExpresionContext(ExpresionContext<T> parent = null)
+        public ExpresionContext(ExpresionContext<T> parent = null,
+            Func<string, Expression<T>> unregisteredVariableResolver = null)
         {
             _parent = parent;
+            _unregisteredVariableResolver = unregisteredVariableResolver;
         }
 
         public void RegisterVariable(string name, Expression<T> value)
@@ -343,6 +346,15 @@ namespace CodeWriter.ExpressionParser
             if (_variables.TryGetValue(name, out var variable))
             {
                 return variable;
+            }
+
+            if (_unregisteredVariableResolver != null)
+            {
+                variable = _unregisteredVariableResolver.Invoke(name);
+                if (variable != null)
+                {
+                    return variable;
+                }
             }
 
             var parentVariable = _parent?.GetVariable(name, nullIsOk: true);
