@@ -69,11 +69,11 @@ namespace CodeWriter.ExpressionParser
 
         private Parser<ExprBuilder> CreateParser()
         {
-            var letterOrUnderscore = Char(c => char.IsLetter(c) || c == '_', 
+            var letterOrUnderscore = Char(c => char.IsLetter(c) || c == '_',
                 "letter or underscore");
-            var letterOrDigitOrUnderscore = Char(c => char.IsLetterOrDigit(c) || c == '_', 
+            var letterOrDigitOrUnderscore = Char(c => char.IsLetterOrDigit(c) || c == '_',
                 "letter or digit or underscore");
-            
+
             var constant = (
                 from number in DecimalInvariant
                 select MakeConstant(number, Parse)
