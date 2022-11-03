@@ -75,6 +75,9 @@ The rest of the variable name may also contains digits.
 | IF   | IF(n < 5, 5, n < 25, 25, 50) | Returns the second argument if the first argument is true, returns the fourth argument if the third argument is true, and so on. Otherwise, returns the last argument. Odd number of arguments required   |
 | MIN  | MIN(0, 1, ...) | Returns smallest argument |
 | MAX  | MAX(0, 1, ...) | Returns largest argument |
+| ROUND   | ROUND(1.1) | Rounds a number |
+| CEILING | CEILING(1.1) | Round number up |
+| FLOOR   | FLOOR(1.1) | Rounds number down |
 
 ## How to Install
 Minimal Unity Version is 2020.1.

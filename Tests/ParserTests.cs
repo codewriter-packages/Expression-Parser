@@ -41,6 +41,24 @@ namespace CodeWriter.ExpressionParser.Tests
         [TestCase("NOT(-5)", ExpectedResult = 0)]
         [TestCase("NOT(5)", ExpectedResult = 0)]
         [TestCase("NOT(NOT(0))", ExpectedResult = 0)]
+        //ROUND
+        [TestCase("ROUND(0)", ExpectedResult = 0)]
+        [TestCase("ROUND(0.1)", ExpectedResult = 0)]
+        [TestCase("ROUND(0.9)", ExpectedResult = 1)]
+        [TestCase("ROUND(-0.1)", ExpectedResult = 0)]
+        [TestCase("ROUND(-0.9)", ExpectedResult = -1)]
+        //CEILING
+        [TestCase("CEILING(0)", ExpectedResult = 0)]
+        [TestCase("CEILING(0.1)", ExpectedResult = 1)]
+        [TestCase("CEILING(0.9)", ExpectedResult = 1)]
+        [TestCase("CEILING(-0.1)", ExpectedResult = 0)]
+        [TestCase("CEILING(-0.9)", ExpectedResult = 0)]
+        //FLOOR
+        [TestCase("FLOOR(0)", ExpectedResult = 0)]
+        [TestCase("FLOOR(0.1)", ExpectedResult = 0)]
+        [TestCase("FLOOR(0.9)", ExpectedResult = 0)]
+        [TestCase("FLOOR(-0.1)", ExpectedResult = -1)]
+        [TestCase("FLOOR(-0.9)", ExpectedResult = -1)]
         // MIN
         [TestCase("MIN(5)", ExpectedResult = 5)]
         [TestCase("MIN(0, 0)", ExpectedResult = 0)]

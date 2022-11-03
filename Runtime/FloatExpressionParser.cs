@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using UnityEngine;
 
@@ -27,5 +28,8 @@ namespace CodeWriter.ExpressionParser
         protected override float GreaterThan(float a, float b) => a > b ? 1 : 0;
         protected override float GreaterThanOrEqual(float a, float b) => a >= b ? 1 : 0;
         protected override bool IsTrue(float v) => !Mathf.Approximately(v, 0);
+        protected override float Round(float v) => (float) Math.Round(v);
+        protected override float Ceiling(float v) => (float) Math.Ceiling(v);
+        protected override float Floor(float v) => (float) Math.Floor(v);
     }
 }

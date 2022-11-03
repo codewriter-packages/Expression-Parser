@@ -167,6 +167,10 @@ namespace CodeWriter.ExpressionParser
         protected abstract T GreaterThanOrEqual(T a, T b);
         protected abstract bool IsTrue(T v);
 
+        protected abstract T Round(T v);
+        protected abstract T Floor(T v);
+        protected abstract T Ceiling(T v);
+
         private T Not(T v) => IsTrue(v) ? False : True;
         private T And(T a, T b) => IsTrue(a) ? b : a;
         private T Or(T a, T b) => IsTrue(a) ? a : b;
@@ -185,6 +189,15 @@ namespace CodeWriter.ExpressionParser
             {
                 case "NOT":
                     return MakeFunction1(Not);
+
+                case "ROUND":
+                    return MakeFunction1(Round);
+
+                case "CEILING":
+                    return MakeFunction1(Ceiling);
+
+                case "FLOOR":
+                    return MakeFunction1(Floor);
 
                 case "MIN":
                     return MakeFunctionFold(Min);
