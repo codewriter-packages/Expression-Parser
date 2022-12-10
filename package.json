@@ -5,7 +5,7 @@
   "version": "0.1.0",
   "unity": "2020.1",
   "license": "MIT",
-  "author": "Vlad Vanifatov (https://github.com/vanifatovvlad)",
+  "author": "CodeWriter (https://github.com/orgs/codewriter-packages)",
   "homepage": "https://github.com/codewriter-packages/Expression-Parser#readme",
   "dependencies": {}
 }
