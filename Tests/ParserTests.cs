@@ -124,7 +124,7 @@ namespace CodeWriter.ExpressionParser.Tests
         [TestCase("NOT(a) AND NOT(b)", 1, 0, ExpectedResult = 0)]
         public float Parse_Variable(string input, float a, float b)
         {
-            var context = new ExpresionContext<float>();
+            var context = new ExpressionContext<float>();
             context.RegisterVariable("a", () => a);
             context.RegisterVariable("b", () => b);
             return Execute(input, context);
@@ -133,7 +133,7 @@ namespace CodeWriter.ExpressionParser.Tests
         [Test]
         public void ComplexVariableName()
         {
-            var context = new ExpresionContext<float>();
+            var context = new ExpressionContext<float>();
             context.RegisterVariable("Some_Variable", () => 1);
             Assert.AreEqual(1, Execute("Some_Variable", context));
         }
@@ -141,7 +141,7 @@ namespace CodeWriter.ExpressionParser.Tests
         [Test]
         public void ReadmeSample()
         {
-            var context = new ExpresionContext<float>();
+            var context = new ExpressionContext<float>();
 
             context.RegisterVariable("a", () => 1);
             context.RegisterVariable("b", () => 2);
@@ -157,7 +157,7 @@ namespace CodeWriter.ExpressionParser.Tests
         [Test]
         public void Parse_Variable_Names()
         {
-            var context = new ExpresionContext<float>();
+            var context = new ExpressionContext<float>();
             context.RegisterVariable("o", () => 1);
             context.RegisterVariable("one", () => 1);
             context.RegisterVariable("one123", () => 1);
@@ -192,7 +192,7 @@ namespace CodeWriter.ExpressionParser.Tests
         [Test]
         public void Parse_If()
         {
-            var context = new ExpresionContext<float>();
+            var context = new ExpressionContext<float>();
 
             var n = 0;
             context.RegisterVariable("n", () => n);
@@ -218,8 +218,8 @@ namespace CodeWriter.ExpressionParser.Tests
         [Test]
         public void ContextTree()
         {
-            var rootContext = new ExpresionContext<float>();
-            var subContext = new ExpresionContext<float>(rootContext);
+            var rootContext = new ExpressionContext<float>();
+            var subContext = new ExpressionContext<float>(rootContext);
 
             var rootA = 1;
             var rootB = 2;
@@ -252,12 +252,12 @@ namespace CodeWriter.ExpressionParser.Tests
             return FloatExpressionParser.Instance.CompilePredicate(input, null, false).Invoke();
         }
 
-        private static float Execute(string input, ExpresionContext<float> context)
+        private static float Execute(string input, ExpressionContext<float> context)
         {
             return Compile(input, context).Invoke();
         }
 
-        private static Expression<float> Compile(string input, ExpresionContext<float> context)
+        private static Expression<float> Compile(string input, ExpressionContext<float> context)
         {
             return FloatExpressionParser.Instance.Compile(input, context, false);
         }

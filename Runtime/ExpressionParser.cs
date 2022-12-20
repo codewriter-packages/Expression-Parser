@@ -13,15 +13,15 @@ namespace CodeWriter.ExpressionParser
         private readonly Dictionary<string, ExprBuilder> _builderCached = new Dictionary<string, ExprBuilder>();
         private Parser<ExprBuilder> _parserCached;
 
-        public Expression<bool> CompilePredicate(string input, ExpresionContext<T> context, bool cache)
+        public Expression<bool> CompilePredicate(string input, ExpressionContext<T> context, bool cache)
         {
             var expr = Compile(input, context, cache);
             return () => IsTrue(expr.Invoke());
         }
 
-        public Expression<T> Compile(string input, ExpresionContext<T> context, bool cache)
+        public Expression<T> Compile(string input, ExpressionContext<T> context, bool cache)
         {
-            context = context ?? new ExpresionContext<T>();
+            context = context ?? new ExpressionContext<T>();
 
             _parserCached = _parserCached ?? CreateParser();
 
@@ -177,7 +177,7 @@ namespace CodeWriter.ExpressionParser
         private T Min(T a, T b) => IsTrue(GreaterThan(a, b)) ? b : a;
         private T Max(T a, T b) => IsTrue(GreaterThan(b, a)) ? b : a;
 
-        private delegate Expression<T> ExprBuilder(ExpresionContext<T> context);
+        private delegate Expression<T> ExprBuilder(ExpressionContext<T> context);
 
         private delegate T UnaryFunc(T a);
 
@@ -330,14 +330,14 @@ namespace CodeWriter.ExpressionParser
         }
     }
 
-    public class ExpresionContext<T>
+    public class ExpressionContext<T>
     {
-        private readonly ExpresionContext<T> _parent;
+        private readonly ExpressionContext<T> _parent;
         private readonly Func<string, Expression<T>> _unregisteredVariableResolver;
 
         private readonly Dictionary<string, Expression<T>> _variables = new Dictionary<string, Expression<T>>();
 
-        public ExpresionContext(ExpresionContext<T> parent = null,
+        public ExpressionContext(ExpressionContext<T> parent = null,
             Func<string, Expression<T>> unregisteredVariableResolver = null)
         {
             _parent = parent;
@@ -383,6 +383,11 @@ namespace CodeWriter.ExpressionParser
 
             throw new VariableNotDefinedException(name);
         }
+    }
+
+    [Obsolete("ExpresionContext contains a typo. Use ExpressionContext instead", true)]
+    public class ExpresionContext<T> : ExpressionContext<T>
+    {
     }
 
     public class VariableNotDefinedException : Exception
