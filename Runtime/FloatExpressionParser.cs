@@ -32,5 +32,7 @@ namespace CodeWriter.ExpressionParser
         protected override float Ceiling(float v) => (float) Math.Ceiling(v);
         protected override float Floor(float v) => (float) Math.Floor(v);
         protected override float Log10(float v) => (float) Math.Log10(v);
+
+        protected override float Log(float v, float newBase) => (float) Math.Log(v, newBase);
     }
 }
