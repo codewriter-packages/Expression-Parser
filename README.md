@@ -78,6 +78,7 @@ The rest of the variable name may also contains digits.
 | ROUND   | ROUND(1.1) | Rounds a number |
 | CEILING | CEILING(1.1) | Round number up |
 | FLOOR   | FLOOR(1.1) | Rounds number down |
+| LOG | LOG(8, 2) | Returns the logarithm to base B of number A |
 
 ## How to Install
 Minimal Unity Version is 2020.1.

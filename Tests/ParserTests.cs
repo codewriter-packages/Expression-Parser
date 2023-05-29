@@ -53,6 +53,13 @@ namespace CodeWriter.ExpressionParser.Tests
         [TestCase("CEILING(0.9)", ExpectedResult = 1)]
         [TestCase("CEILING(-0.1)", ExpectedResult = 0)]
         [TestCase("CEILING(-0.9)", ExpectedResult = 0)]
+        // LOG
+        [TestCase("LOG(10)", ExpectedResult = 1)]
+        [TestCase("LOG(10, 10)", ExpectedResult = 1)]
+        [TestCase("LOG(10000, 10)", ExpectedResult = 4)]
+        [TestCase("LOG(8, 2)", ExpectedResult = 3)]
+        [TestCase("ROUND(LOG(1728, 12))", ExpectedResult = 3)]
+        [TestCase("ROUND(LOG(0.0001, 0.01))", ExpectedResult = 2)]
         //FLOOR
         [TestCase("FLOOR(0)", ExpectedResult = 0)]
         [TestCase("FLOOR(0.1)", ExpectedResult = 0)]

@@ -170,6 +170,9 @@ namespace CodeWriter.ExpressionParser
         protected abstract T Round(T v);
         protected abstract T Floor(T v);
         protected abstract T Ceiling(T v);
+        protected abstract T Log10(T v);
+
+        private T Log(T v, T newBase) => Div(Log10(v), Log10(newBase));
 
         private T Not(T v) => IsTrue(v) ? False : True;
         private T And(T a, T b) => IsTrue(a) ? b : a;
@@ -198,6 +201,11 @@ namespace CodeWriter.ExpressionParser
 
                 case "FLOOR":
                     return MakeFunction1(Floor);
+
+                case "LOG":
+                    return parameterBuilders.Count == 2
+                        ? MakeBinary(Log, parameterBuilders[0], parameterBuilders[1])
+                        : MakeFunction1(Log10);
 
                 case "MIN":
                     return MakeFunctionFold(Min);
