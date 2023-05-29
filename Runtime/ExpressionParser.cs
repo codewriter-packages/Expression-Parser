@@ -172,7 +172,7 @@ namespace CodeWriter.ExpressionParser
         protected abstract T Ceiling(T v);
         protected abstract T Log10(T v);
 
-        private T Log(T v, T newBase) => Div(Log10(v), Log10(newBase));
+        protected virtual T Log(T v, T newBase) => Div(Log10(v), Log10(newBase));
 
         private T Not(T v) => IsTrue(v) ? False : True;
         private T And(T a, T b) => IsTrue(a) ? b : a;
